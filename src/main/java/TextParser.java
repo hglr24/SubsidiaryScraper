@@ -28,8 +28,8 @@ class TextParser {
     private static final List<String> REMOVE_LINE_ENDINGS = Arrays.asList(" the", " a", " an", " of", " in");
     private static final String WHITESPACE_REGEX = "\\p{Z}";
     private static final String DOT_REGEX = "\\.";
-    private static final String COUNTRY_ABBR_PREFIX = "(\\s|^)";
-    private static final String COUNTRY_ABBR_SUFFIX = "(\\s|$)";
+    private static final String COUNTRY_ABBR_PREFIX = "(\\s|^|\\()";
+    private static final String COUNTRY_ABBR_SUFFIX = "(\\s|$|\\))";
     private static final String NOT_CAP_OR_NUM_REGEX = "([A-Z]|[0-9])";
     private static final String TXT_SUFFIX = ".txt";
     private static final String CSV_ERROR = "Error creating CSV results file";

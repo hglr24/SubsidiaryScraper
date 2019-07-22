@@ -18,7 +18,7 @@
 (Important: first row ignored)  
 
 EXAMPLE:  
-| ID Info (Could be anything) | Link to Filing |  
+| Firm ID | Link to Filing |  
 | -------- | -------- |  
 | 1347 PROPERTY INSURANCE HOLDINGS, INC | www.sec.gov/Archives/edgar/data/1591890/000149315218003887/ex21-1.htm |  
 

@@ -105,6 +105,16 @@ class Utility {
                 if (currentRow.getPhysicalNumberOfCells() >= 2) {
                     String firmId = currentRow.getCell(0).getStringCellValue();
                     String exURL = currentRow.getCell(1).getStringCellValue();
+
+                    String tempID = firmId;
+                    int ext = 0;
+                    while (rtnMap.values().contains(tempID)) {
+                        tempID = firmId;
+                        ext++;
+                        tempID = tempID + ext;
+                    }
+                    firmId = tempID;
+
                     if (!exURL.startsWith(HTTP_GENERIC_PREFIX)) {
                         exURL = HTTPS_PREFIX + exURL;
                     }
