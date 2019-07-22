@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="htmlcleaner-2">
+    <CLASSES>
+      <root url="file://$USER_HOME$/Downloads/htmlcleaner-2.22" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+    <jarDirectory url="file://$USER_HOME$/Downloads/htmlcleaner-2.22" recursive="false" />
+  </library>
+</component>
