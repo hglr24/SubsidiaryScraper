@@ -4,8 +4,8 @@
 
 ----------------------------------
 #### Requirements:
-* Java Runtime Environment (JRE) Version 9 or greater (can be found at `java.com`)
-* To use through command prompt (easiest way), Java must be added to the Windows PATH (this is an option during install, otherwise Google it)
+* Java Runtime Environment (JRE) Version 8 or greater (can be found at `java.com`)
+* To use through command prompt (easiest way), Java must be added to the Windows PATH (this should happen automatically during install, otherwise Google it)
 * A version of Windows that is supported by the chosen Java version (Windows 7 or greater is definitely safe)
 * A stable network connection for accessing and downloading from provided links
 
