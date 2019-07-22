@@ -28,6 +28,8 @@ class TextParser {
     private static final List<String> REMOVE_LINE_ENDINGS = Arrays.asList(" the", " a", " an", " of", " in");
     private static final String WHITESPACE_REGEX = "\\p{Z}";
     private static final String DOT_REGEX = "\\.";
+    private static final String QUESTION_REGEX = "\\?";
+    private static final String BULLET_REGEX = "[\u2022]";
     private static final String COUNTRY_ABBR_PREFIX = "(\\s|^|\\()";
     private static final String COUNTRY_ABBR_SUFFIX = "(\\s|$|\\))";
     private static final String NOT_CAP_OR_NUM_REGEX = "([A-Z]|[0-9])";
@@ -143,7 +145,11 @@ class TextParser {
     }
 
     private String cleanName(String subName) {
+        subName = stripName(subName, BULLET_REGEX);
+        subName = stripName(subName, QUESTION_REGEX);
         subName = stripName(subName, WHITESPACE_REGEX);
+        subName = stripName(subName, BULLET_REGEX);
+        subName = stripName(subName, QUESTION_REGEX);
         subName = stripName(subName, DOT_REGEX);
         subName = removePercentageIfPresent(subName);
         subName = subName.replace(",", "");     // For CSV formatting
