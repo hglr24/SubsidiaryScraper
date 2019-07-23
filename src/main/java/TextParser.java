@@ -17,8 +17,8 @@ class TextParser {
     private static final int MAX_SUB_NAME_FLAG = 60;
     private static final int EMPTY_DATA_LINE_COUNT_FLAG = 5;
     private static final int MANY_COUNTRIES_THRESHOLD = 2;
-    private static final double DATA_LOSS_THRESHOLD = 0.35;
-    private static final int MIN_DATA_LOSS_SUSPICION = 20;
+    private static final double DATA_LOSS_THRESHOLD = 0.30;
+    private static final int MIN_DATA_LOSS_SUSPICION = 30;
 
     private static final String OUTPUT_DIR = "/output/";
     private static final String CSV_OUTPUT_FILE = "_results.csv";
@@ -31,8 +31,8 @@ class TextParser {
     private static final String DOT_REGEX = "\\.";
     private static final String QUESTION_REGEX = "\\?";
     private static final String BULLET_REGEX = "[\u2022]";
-    private static final String COUNTRY_ABBR_PREFIX = "(\\s|^|\\()";
-    private static final String COUNTRY_ABBR_SUFFIX = "(\\s|$|\\))";
+    private static final String COUNTRY_ABBR_PREFIX = "(\\p{Z}|^|\\()";
+    private static final String COUNTRY_ABBR_SUFFIX = "(\\p{Z}|$|\\)|,)";
     private static final String NOT_CAP_OR_NUM_REGEX = "([A-Z]|[0-9])";
     private static final String TXT_SUFFIX = ".txt";
     private static final String CSV_ERROR = "Error creating CSV results file";
@@ -94,8 +94,14 @@ class TextParser {
         Scanner scan = new Scanner(new File(Utility.getRunningPath() + COUNTRIES_LIST_FILE));
 
         while (scan.hasNextLine()) {
-            currentCountryList = Arrays.asList(scan.nextLine().split("="));
-
+            currentCountryList = new ArrayList<>(Arrays.asList(scan.nextLine().split("=")));
+            List<String> upperCaseTerms = new ArrayList<>();
+            for (String term : currentCountryList)
+                upperCaseTerms.add(term.toUpperCase());
+            for (String upper : upperCaseTerms) {
+                if (!currentCountryList.contains(upper))
+                    currentCountryList.add(0, upper);
+            }
             for (String countryAbbr : currentCountryList) {
                 String regex = COUNTRY_ABBR_PREFIX + countryAbbr + COUNTRY_ABBR_SUFFIX;
                 Matcher matchLine = Pattern.compile(regex).matcher(currentLine);
