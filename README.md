@@ -4,8 +4,10 @@
 
 ----------------------------------
 #### Requirements:
-* Java Runtime Environment (JRE) Version 8 or greater (can be found at `java.com`)
-* To use through command prompt (easiest way), Java must be added to the Windows PATH (this should happen automatically during install, otherwise Google it)
+* Java Runtime Environment (JRE) Version 8 OR Java Development Kit (JDK) Version 8 or greater 
+(_can be found [here](https://www.oracle.com/technetwork/java/javase/downloads)_)
+* To use through command prompt (easiest way), Java must be added to the Windows PATH (this should happen automatically 
+during install, otherwise Google it)
 * A version of Windows that is supported by the chosen Java version (Windows 7 or greater is definitely safe)
 * A stable network connection for accessing and downloading from provided links
 
@@ -15,12 +17,12 @@
 1. Locate `input` folder in the same directory as the included JAR and resource files
 
 2. Within this folder, add any number of Excel spreadsheets containing links to SEC EX-21 filings 
-(Important: first row ignored)  
+(Important: first row is ignored)  
 
 EXAMPLE:  
 | Firm ID | Link to Filing |  
 | -------- | -------- |  
-| 1347 PROPERTY INSURANCE HOLDINGS, INC | www.sec.gov/Archives/edgar/data/1591890/000149315218003887/ex21-1.htm |  
+| 1591890 | www.sec.gov/Archives/edgar/data/1591890/000149315218003887/ex21-1.htm |  
 
 
 3. Once input spreadsheet is in place, double-click the .bat file located in the root JAR directory. This will open the
@@ -48,8 +50,8 @@ How this information is picked out of the source material is discussed further d
   
 The analysis process is not perfect, and problems arise from time to time. I recommend checking the log file for any 
 given run to identify potential issues with the output data. The issues logged range in severity, but come in two types: 
-`FILE_EVENT` and `LINE_EVENT`. Both entry types, when logged, record the firm ID of the affected original filing based on 
-the downloaded HTML.  
+`FILE_EVENT` and `LINE_EVENT`. Both entry types, when logged, record the firm ID of the affected original filing based 
+on the downloaded HTML.  
   
 `FILE_EVENT` refers to more severe events that could significantly impact a data set (for example, no data extracted to 
 CSV from a filing that was long enough to most likely contain relevant data)  
