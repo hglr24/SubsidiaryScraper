@@ -17,7 +17,7 @@ during install, otherwise Google it)
 1. Locate `input` folder in the same directory as the included JAR and resource files
 
 2. Within this folder, add any number of Excel spreadsheets containing links to SEC EX-21 filings 
-(Important: first row is ignored)  
+(Important: first row is ignored, a sample file is provided)  
 
 EXAMPLE:  
 | Firm ID | Link to Filing |  
