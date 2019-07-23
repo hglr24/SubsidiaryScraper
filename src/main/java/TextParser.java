@@ -17,13 +17,14 @@ class TextParser {
     private static final int MAX_SUB_NAME_FLAG = 60;
     private static final int EMPTY_DATA_LINE_COUNT_FLAG = 5;
     private static final int MANY_COUNTRIES_THRESHOLD = 2;
+    private static final double DATA_LOSS_THRESHOLD = 0.35;
+    private static final int MIN_DATA_LOSS_SUSPICION = 20;
 
     private static final String OUTPUT_DIR = "/output/";
     private static final String CSV_OUTPUT_FILE = "_results.csv";
     private static final String COUNTRIES_LIST_FILE = "/resources/country_list.txt";
     private static final String BLACKLIST_FILE = "/resources/blacklist_terms.txt";
 
-    private static final String RELEVANT_START = "### StArT oF rElEvAnT dAtA ###";
     private static final List<String> CSV_HEADER = Arrays.asList("FIRMID", "SUBSIDIARY NAME", "LOCATION");
     private static final List<String> REMOVE_LINE_ENDINGS = Arrays.asList(" the", " a", " an", " of", " in");
     private static final String WHITESPACE_REGEX = "\\p{Z}";
@@ -41,7 +42,7 @@ class TextParser {
     private static final String LONG_SUB_NAME_LOG = "Long subsidiary name (>60 chars)";
     private static final String FIRST_CHAR_PROBLEM_LOG = "First character of subsidiary is not upper case or number";
     private static final String DATA_LOSS_EMPTY_LOG = "Potential data loss: No results generated for non-empty file";
-    private static final String DATA_LOSS_THRESHOLD_LOG = "Potential data loss: Less than 15% of original file lines translated to results";
+    private static final String DATA_LOSS_THRESHOLD_LOG = "Potential data loss: Less than 35% of original file lines translated to results";
     private static final String MANY_COUNTRIES_LOG = "More than two countries found on line, subsidiary name may contain unnecessary data";
 
     private List<List<String>> myDataLines = new ArrayList<>();
@@ -72,25 +73,12 @@ class TextParser {
 
     private void generateDataLines(String dataString, String idStuff)  {
             Scanner scan = new Scanner(dataString);
-            boolean startLooking = true;                             // TOGGLE TO FALSE TO ENABLE RELEVANCY STRING CHECK TODO
-
             while (scan.hasNextLine()) {
                 String currentLine = scan.nextLine();
-
-                if (dataString.contains(RELEVANT_START)) {
-                    if (currentLine.contains(RELEVANT_START)) {
-                        startLooking = true;
-                    }
-                }
-                else {
-                    startLooking = true;
-                }
-                if (startLooking) {
-                    try {
-                        scanForCountries(currentLine, idStuff.replace(TXT_SUFFIX, ""));
-                    } catch (IOException e) {
-                        System.out.println(ERROR_ANALYZING_HTML_FILE + idStuff + ERROR_AT_LINE + currentLine);
-                    }
+                try {
+                    scanForCountries(currentLine, idStuff.replace(TXT_SUFFIX, ""));
+                } catch (IOException e) {
+                    System.out.println(ERROR_ANALYZING_HTML_FILE + idStuff + ERROR_AT_LINE + currentLine);
                 }
             }
             scan.close();
@@ -98,9 +86,10 @@ class TextParser {
 
     private void scanForCountries(String currentLine, String firmId) throws IOException {
         List<String> currentCountryList;
-        String lastCountryAbbr = null;
-        String lastFormalCountry = null;
-        int lastAbbrIndex = -1;
+        String lastCountryAbbr = "";
+        String lastFormalCountry = "";
+        int lastAbbrStartIndex = 0;
+        int lastAbbrEndIndex = 0;
         int foundCountries = 0;
         Scanner scan = new Scanner(new File(Utility.getRunningPath() + COUNTRIES_LIST_FILE));
 
@@ -112,21 +101,24 @@ class TextParser {
                 Matcher matchLine = Pattern.compile(regex).matcher(currentLine);
                 if (matchLine.find()) {
                     foundCountries++;
-                    int matchIndex = matchLine.start();
+                    int matchStartIndex = matchLine.start();
+                    int matchEndIndex = matchLine.end();
                     while (matchLine.find()) {
-                        matchIndex = matchLine.start();
+                        matchStartIndex = matchLine.start();
+                        matchEndIndex = matchLine.end();
                     }
-
-                    if (matchIndex > lastAbbrIndex) {
+                    if (matchEndIndex > lastAbbrEndIndex ||
+                            (matchEndIndex == lastAbbrEndIndex && countryAbbr.length() > lastCountryAbbr.length())) {
                         lastCountryAbbr = countryAbbr;
                         lastFormalCountry = currentCountryList.get(currentCountryList.size() - 1);
-                        lastAbbrIndex = matchIndex;
+                        lastAbbrStartIndex = matchStartIndex;
+                        lastAbbrEndIndex = matchEndIndex;
                     }
                 }
             }
         }
         scan.close();
-        addDataLine(currentLine, firmId, lastCountryAbbr, lastFormalCountry, lastAbbrIndex);
+        addDataLine(currentLine, firmId, lastCountryAbbr, lastFormalCountry, lastAbbrStartIndex);
         logManyCountries(currentLine, firmId, foundCountries);
     }
 
@@ -218,7 +210,8 @@ class TextParser {
         if (myDataLines.size() == oldLineCount && lineCount > EMPTY_DATA_LINE_COUNT_FLAG) {
             myLogger.addEvent(LoggerEvent.FILE_EVENT, firmId, DATA_LOSS_EMPTY_LOG);
         }
-        else if ((myDataLines.size() - oldLineCount) != 0 && lineCount / (myDataLines.size() - oldLineCount) < 0.15) {
+        else if ((myDataLines.size() - oldLineCount) != 0 && lineCount > MIN_DATA_LOSS_SUSPICION &&
+                ((1.0 * (myDataLines.size() - oldLineCount)) / lineCount) < DATA_LOSS_THRESHOLD) {
             myLogger.addEvent(LoggerEvent.FILE_EVENT, firmId, DATA_LOSS_THRESHOLD_LOG);
         }
     }

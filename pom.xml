@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.itextpdf</groupId>
     <artifactId>SubsidiaryScraper</artifactId>
+    <groupId>org.apache.maven</groupId>
     <version>1.0</version>
 
     <properties>
@@ -65,12 +65,23 @@
     </build>
 
     <dependencies>
-        <!-- add all iText 7 Community modules -->
+        <!-- always needed -->
         <dependency>
             <groupId>com.itextpdf</groupId>
-            <artifactId>itext7-core</artifactId>
+            <artifactId>kernel</artifactId>
             <version>${itext.version}</version>
-            <type>pom</type>
+        </dependency>
+        <!-- always needed -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>io</artifactId>
+            <version>${itext.version}</version>
+        </dependency>
+        <!-- always needed -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>layout</artifactId>
+            <version>${itext.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.itextpdf/html2pdf -->
         <dependency>

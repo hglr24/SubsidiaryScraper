@@ -63,12 +63,10 @@ public class ScraperMain {
     }
 
     private static File htmlToPdf(File htmlFile, String cleanHtml, String runningPath) {
-        HtmlParser parser = new HtmlParser();
-
         File pdfOutputFile = new File(runningPath + OUTPUT_PDF_DIR +
                 htmlFile.getName().replace(HTM_SUFFIX, PDF_SUFFIX));  // Create empty output PDF file
         try {
-            HtmlConverter.convertToPdf(parser.insertRelevancyMarkers(cleanHtml), new FileOutputStream(pdfOutputFile)); // Create PDF
+            HtmlConverter.convertToPdf(cleanHtml, new FileOutputStream(pdfOutputFile)); // Create PDF
         } catch (NullPointerException | IOException e) {
             System.out.println(HTML_ERROR + htmlFile.getName());
         }
