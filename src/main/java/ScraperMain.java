@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -44,8 +46,10 @@ public class ScraperMain {
         File[] inputSheets = new File(runningPath + INPUT_DIR).listFiles();
 
         if (inputSheets != null) {
-            Map<File, String> htmlFileMap = Utility.getFilesFromSheet(inputSheets);    // This should be the retrieved html files
+            List<String> originalLinks = new ArrayList<>();
+            Map<File, String> htmlFileMap = Utility.getFilesFromSheet(inputSheets, originalLinks);    // This should be the retrieved html files
             Utility.createOutputDirectories(OUTPUT_DIR, OUTPUT_PDF_DIR, OUTPUT_TXT_DIR, INPUT_HTML_DIR);
+            Collections.sort(originalLinks);
 
             for (File htmlFile : htmlFileMap.keySet()) {       // Cycle through files in resources
                 System.out.println(CONVERT_TEXT + "(" + fileCount + "/" + htmlFileMap.keySet().size() + "): " + htmlFile.getPath());
@@ -56,7 +60,7 @@ public class ScraperMain {
                 pdfToText(pdfOutputFile, htmlFile, runningPath);  // Convert new PDF to text file
                 fileCount++;
             }
-            textToCsv(runningPath);
+            textToCsv(runningPath, originalLinks);
             removeTempFiles();
             System.out.println(ANALYSIS_COMPLETE_DISPLAY);
         }
@@ -94,7 +98,7 @@ public class ScraperMain {
         }
     }
 
-    private static void textToCsv(String runningPath) {
+    private static void textToCsv(String runningPath, List<String> originalLinks) {
         File[] inputFiles = new File(runningPath + OUTPUT_TXT_DIR).listFiles();
         List<File> files = Utility.getFiles(inputFiles);
         TextParser parser = new TextParser();
@@ -103,7 +107,11 @@ public class ScraperMain {
             try {
                 System.out.println("Analyzing text (" + (files.indexOf(textFile) + 1) + "/" + files.size() + "): "
                         + textFile.getName());
-                parser.analyzeTextFile(textFile);
+                String currLink = "";
+                if (originalLinks.size() > files.indexOf(textFile)) {
+                    currLink = originalLinks.get(files.indexOf(textFile));
+                }
+                parser.analyzeTextFile(textFile, currLink);
             } catch (IOException e) {
                 System.out.println(ERROR_ANALYZING_TEXT_FILE + textFile.getName());
             }

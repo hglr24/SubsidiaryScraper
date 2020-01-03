@@ -1,6 +1,15 @@
 ----------------------------------
-#### Subsidiary Scraper
+#### Subsidiary Scraper V1.1
 ### README
+
+----------------------------------
+#### Changelog from V1.0
+* Original filing link now included in output CSV  
+* Program now generates blank CSV output rows for files with no detected subsidiaries  
+* Program now generates error column that identifies lines with potential issues without needing to look at log file first  
+* Firm ID in output is now CIK extracted from input URLs
+* Input spreadsheet formatting changed to no longer require filename column
+* Fixed line endings in log text file to display properly on all versions of Windows (CRLF)
 
 ----------------------------------
 #### Requirements:
@@ -19,16 +28,17 @@ during install, otherwise Google it)
 2. Within this folder, add any number of Excel spreadsheets containing links to SEC EX-21 filings 
 (Important: first row is ignored, a sample file is provided)  
 
-EXAMPLE:  
-| Firm ID | Link to Filing |  
-| -------- | -------- |  
-| 1591890 | www.sec.gov/Archives/edgar/data/1591890/000149315218003887/ex21-1.htm |  
+Note - the beginning of the provided URLs must be formatted like this: www.sec.gov/Archives/edgar/data/...
+if the CIK is to be extracted from the URL. Otherwise, the analysis will run and results will be generated, 
+but there will be no associated CIK.
 
-
-3. Once input spreadsheet is in place, double-click the .bat file located in the root JAR directory. This will open the
+EXAMPLE CELL:  
+| www.sec.gov/Archives/edgar/data/1591890/000149315218003887/ex21-1.htm |  
+  
+3. Once input spreadsheet(s) is in place, double-click the .bat file located in the root JAR directory. This will open the
 command prompt and begin the analysis process.
     * If for some reason the batch file does not run, open Command Prompt and run the following command:  
-    `java -jar SubsidiaryScraper-1.0-jar-with-dependencies.jar`  
+    `java -jar SubsidiaryScraper-1.1-jar-with-dependencies.jar`  
 
 4. Ignore reflection and logger warnings, these are normal and will not impact the operation of the program.
 
@@ -45,7 +55,7 @@ Within the `output` directory, one execution produces a single CSV file with the
 links in the `input` folder. To identify which file out of multiple runs is the desired one, refer to the filename, 
 which begins with the date and time of execution. Also created are log files for each run in the `output/logs` folder.  
   
-The CSV file is organized per row as such: `{ Firm ID, Subsidiary Name, Location }`  
+The CSV file is organized per row as such: `{ Firm CIK, Subsidiary Name, Location, Link, Error }`  
 How this information is picked out of the source material is discussed further down in this document.
   
 The analysis process is not perfect, and problems arise from time to time. I recommend checking the log file for any 
@@ -109,4 +119,4 @@ JAR with dependencies.
 
 -----------------------------------
 
-###### _Harry Ross 2019_
+###### _Harry Ross 2020_

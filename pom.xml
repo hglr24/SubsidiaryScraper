@@ -6,7 +6,7 @@
 
     <artifactId>SubsidiaryScraper</artifactId>
     <groupId>org.apache.maven</groupId>
-    <version>1.0</version>
+    <version>1.1</version>
 
     <properties>
         <itext.version>RELEASE</itext.version>

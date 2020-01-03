@@ -15,12 +15,12 @@ class Logger {
     }
 
     void addEvent(LoggerEvent event, String fileName, String desc) {
-        String newLine = "[" + event + ", " + fileName + "]: " + desc + "\n";
+        String newLine = "[" + event + ", " + fileName + "]: " + desc + "\r\n";
         myLog.append(newLine);
     }
 
     void addEvent(LoggerEvent event, String fileName, String desc, String line) {
-        String newLine = "[" + event + ", " + fileName + "]: " + desc + " [ORIGINAL LINE: " + line + "]\n";
+        String newLine = "[" + event + ", " + fileName + "]: " + desc + " [ORIGINAL LINE: " + line + "]\r\n";
         myLog.append(newLine);
     }
 

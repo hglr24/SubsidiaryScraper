@@ -25,7 +25,7 @@ class TextParser {
     private static final String COUNTRIES_LIST_FILE = "/resources/country_list.txt";
     private static final String BLACKLIST_FILE = "/resources/blacklist_terms.txt";
 
-    private static final List<String> CSV_HEADER = Arrays.asList("FIRMID", "SUBSIDIARY NAME", "LOCATION");
+    private static final List<String> CSV_HEADER = Arrays.asList("CIK", "SUBSIDIARY NAME", "LOCATION", "LINK", "ERROR");
     private static final List<String> REMOVE_LINE_ENDINGS = Arrays.asList(" the", " a", " an", " of", " in");
     private static final String WHITESPACE_REGEX = "\\p{Z}";
     private static final String DOT_REGEX = "\\.";
@@ -48,7 +48,7 @@ class TextParser {
     private List<List<String>> myDataLines = new ArrayList<>();
     private Logger myLogger = new Logger();
 
-    void analyzeTextFile(File textFile) throws IOException {
+    void analyzeTextFile(File textFile, String originalLink) throws IOException {
         if (!myDataLines.contains(CSV_HEADER))
             myDataLines.add(CSV_HEADER);
 
@@ -67,16 +67,20 @@ class TextParser {
         }
         scan.close();
         int oldLineCount = myDataLines.size();
-        generateDataLines(builder.toString(), textFile.getName());
+        generateDataLines(builder.toString(), textFile.getName(), originalLink);
         logCheckDataLoss(lineCount, oldLineCount, textFile.getName().replace(TXT_SUFFIX, ""));
+
+        if (myDataLines.size() == oldLineCount) {
+            myDataLines.add(Arrays.asList(textFile.getName().replace(TXT_SUFFIX, ""), "", "", originalLink, "No subsidiaries detected for this file."));
+        }
     }
 
-    private void generateDataLines(String dataString, String idStuff)  {
+    private void generateDataLines(String dataString, String idStuff, String originalLink)  {
             Scanner scan = new Scanner(dataString);
             while (scan.hasNextLine()) {
                 String currentLine = scan.nextLine();
                 try {
-                    scanForCountries(currentLine, idStuff.replace(TXT_SUFFIX, ""));
+                    scanForCountries(currentLine, idStuff.replace(TXT_SUFFIX, ""), originalLink);
                 } catch (IOException e) {
                     System.out.println(ERROR_ANALYZING_HTML_FILE + idStuff + ERROR_AT_LINE + currentLine);
                 }
@@ -84,7 +88,7 @@ class TextParser {
             scan.close();
     }
 
-    private void scanForCountries(String currentLine, String firmId) throws IOException {
+    private void scanForCountries(String currentLine, String firmId, String originalLink) throws IOException {
         List<String> currentCountryList;
         String lastCountryAbbr = "";
         String lastFormalCountry = "";
@@ -124,20 +128,22 @@ class TextParser {
             }
         }
         scan.close();
-        addDataLine(currentLine, firmId, lastCountryAbbr, lastFormalCountry, lastAbbrStartIndex);
-        logManyCountries(currentLine, firmId, foundCountries);
+        addDataLine(currentLine, firmId, lastCountryAbbr, lastFormalCountry, lastAbbrStartIndex, originalLink, logManyCountries(currentLine, firmId, foundCountries));
     }
 
-    private void addDataLine(String currentLine, String firmId, String lastCountryAbbr, String lastFormalCountry, int lastAbbrIndex) throws IOException {
+    private void addDataLine(String currentLine, String firmId, String lastCountryAbbr, String lastFormalCountry, int lastAbbrIndex, String originalLink, boolean manyCtry) throws IOException {
         String subName;
         if (lastCountryAbbr != null && currentLine.lastIndexOf(lastCountryAbbr) != 0) {  // Make sure non-null and not first thing before adding data line
             subName = currentLine.substring(0, lastAbbrIndex);
             subName = cleanName(subName); // Clean name before adding data line
 
             if (checkValidity(subName)) { // Check validity before adding data line
-                List<String> newDataLine = Arrays.asList(firmId, subName, lastFormalCountry);
+                String errorString = "";
+                if (logNameSyntax(currentLine, firmId, subName) || manyCtry) {
+                    errorString = "Error or warning detected on this entry. See log file for details.";
+                }
+                List<String> newDataLine = Arrays.asList(firmId, subName, lastFormalCountry, originalLink, errorString);
                 myDataLines.add(newDataLine);
-                logNameSyntax(currentLine, firmId, subName);
             }
         }
     }
@@ -222,18 +228,28 @@ class TextParser {
         }
     }
 
-    private void logNameSyntax(String currentLine, String firmId, String subName) {
-        if (subName.length() < MIN_SUB_NAME_FLAG)
+    private boolean logNameSyntax(String currentLine, String firmId, String subName) {
+        boolean rtn = false;
+        if (subName.length() < MIN_SUB_NAME_FLAG) {
             myLogger.addEvent(LoggerEvent.LINE_EVENT, firmId, SHORT_SUB_NAME_LOG, currentLine);
-        if (subName.length() > MAX_SUB_NAME_FLAG)
+            rtn = true;
+        }
+        if (subName.length() > MAX_SUB_NAME_FLAG) {
             myLogger.addEvent(LoggerEvent.LINE_EVENT, firmId, LONG_SUB_NAME_LOG, currentLine);
-        if (!subName.substring(0, 1).matches(NOT_CAP_OR_NUM_REGEX))
+            rtn = true;
+        }
+        if (!subName.substring(0, 1).matches(NOT_CAP_OR_NUM_REGEX)) {
             myLogger.addEvent(LoggerEvent.LINE_EVENT, firmId, FIRST_CHAR_PROBLEM_LOG, currentLine);
+            rtn = true;
+        }
+        return rtn;
     }
 
-    private void logManyCountries(String currentLine, String firmId, int foundCountries) {
+    private boolean logManyCountries(String currentLine, String firmId, int foundCountries) {
         if (foundCountries > MANY_COUNTRIES_THRESHOLD) {
             myLogger.addEvent(LoggerEvent.LINE_EVENT, firmId, MANY_COUNTRIES_LOG, currentLine);
+            return true;
         }
+        return false;
     }
 }

@@ -67,7 +67,7 @@ class Utility {
         return runningPath;
     }
 
-    static Map<File, String> getFilesFromSheet(File[] inputFiles) {
+    static Map<File, String> getFilesFromSheet(File[] inputFiles, List<String> links) {
         Map<File, String> rtnMap = new TreeMap<>();
 
         for (File file : inputFiles) {
@@ -84,7 +84,7 @@ class Utility {
                         return new TreeMap<>();
                     }
 
-                    downloadFile(rtnMap, rowIterator);
+                    downloadFile(rtnMap, rowIterator, links);
                     workbook.close();
                     stream.close();
 
@@ -96,15 +96,20 @@ class Utility {
         return rtnMap;
     }
 
-    private static void downloadFile(Map<File, String> rtnMap, Iterator<Row> rowIterator) {
+    private static void downloadFile(Map<File, String> rtnMap, Iterator<Row> rowIterator, List<String> links) {
         System.out.print(DOWNLOADING_FILES);
         while (rowIterator.hasNext()) {
             Row currentRow = rowIterator.next();
 
             if (currentRow.getRowNum() > 0) {
-                if (currentRow.getPhysicalNumberOfCells() >= 2) {
-                    String firmId = currentRow.getCell(0).getStringCellValue();
-                    String exURL = currentRow.getCell(1).getStringCellValue();
+                if (currentRow.getPhysicalNumberOfCells() >= 1) {
+                    String exURL = currentRow.getCell(0).getStringCellValue();
+                    String firmId = "NO_CIK_IN_LINK";
+
+                    if (exURL.contains("/data/")) {
+                        int cikIndex = exURL.indexOf("/data/") + 6;
+                        firmId = exURL.substring(cikIndex, exURL.indexOf("/", cikIndex));
+                    }
 
                     String tempID = firmId;
                     int ext = 0;
@@ -123,6 +128,7 @@ class Utility {
                         File downloadedHtml = new File(getRunningPath() + HTML_DIRECTORY + firmId);
                         FileUtils.copyURLToFile(new URL(exURL), downloadedHtml);
                         rtnMap.put(downloadedHtml, firmId);
+                        links.add(exURL);
                     } catch (IOException e) {
                         System.out.println(FILE_DOWNLOAD_ERROR + firmId);
                     }
